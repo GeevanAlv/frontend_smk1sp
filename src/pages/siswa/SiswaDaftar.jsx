@@ -184,7 +184,7 @@ export default function SiswaDaftar() {
                     <option value="TKJ">Teknik Komputer & Jaringan (TKJ)</option>
                     <option value="ATP">Agribisnis Tanaman Perkebunan (ATP)</option>
                     <option value="TKR">Teknik Kendaraan Ringan (TKR)</option>
-                    <option value="AKL">Akuntansi & Keuangan Lembaga (AKL)</option>
+                    <option value="AK">Akuntansi & Keuangan Lembaga (AKL)</option>
                   </select>
                 </div>
               </div>

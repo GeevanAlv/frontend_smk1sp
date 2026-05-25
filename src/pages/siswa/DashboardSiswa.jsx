@@ -4,7 +4,7 @@ import {
   FaEdit, FaPrint, FaClock, FaExclamationTriangle, 
   FaCheckCircle, FaSignOutAlt, FaInfoCircle, 
   FaTimesCircle, FaFileSignature, FaArrowRight,
-  FaBullhorn // <-- ICON BARU DITAMBAHKAN DI SINI
+  FaBullhorn
 } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import api from '../../services/api';
@@ -18,8 +18,19 @@ export default function DashboardSiswa() {
     notes: []
   });
 
+  // =========================================================================
+  // 🛡️ EFFECT DIPERBARUI: DILENGKAPI "SATPAM" PENJAGA TOKEN
+  // =========================================================================
   useEffect(() => {
     let isMounted = true;
+
+    // SATPAM 1: Cek apakah token masih ada di Local Storage saat halaman dibuka?
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Jika token tidak ada (sudah dihapus), langsung usir ke halaman login!
+      navigate('/login', { replace: true });
+      return; 
+    }
 
     const fetchStatus = async () => {
       try {
@@ -34,7 +45,16 @@ export default function DashboardSiswa() {
         }
       } catch (error) {
         if (isMounted) {
-          setStatusData({ status: 'BELUM_DAFTAR', notes: [] });
+          // SATPAM 2: Deteksi jika API Arief menolak karena token kadaluarsa/salah (Error 401)
+          if (error.response && error.response.status === 401) {
+            console.log("Sesi tidak valid! Mengeluarkan paksa...");
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/login', { replace: true });
+          } else {
+            // Jika error lain (misal server down), set ke belum daftar
+            setStatusData({ status: 'BELUM_DAFTAR', notes: [] });
+          }
         }
       }
     };
@@ -44,7 +64,7 @@ export default function DashboardSiswa() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [navigate]); // Pastikan navigate masuk di sini
 
   const handleLogout = () => {
     Swal.fire({
@@ -180,9 +200,6 @@ export default function DashboardSiswa() {
               <FaArrowRight className="text-slate-300 group-hover:text-white text-2xl transition-colors" />
             </Link>
 
-            {/* ===================================================================== */}
-            {/* INI TAMBAHAN MENU UNTUK HASIL SELEKSI KELULUSAN                       */}
-            {/* ===================================================================== */}
             <Link to="/siswa/hasil-seleksi" className="group bg-white hover:bg-indigo-600 border border-slate-200 hover:border-transparent transition-all duration-300 rounded-3xl p-8 flex items-center justify-between shadow-xl shadow-slate-200/50 cursor-pointer">
               <div className="flex items-center gap-6">
                 <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl group-hover:bg-white transition-colors">

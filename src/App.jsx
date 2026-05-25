@@ -1,4 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react'; // <-- TAMBAHAN IMPORT INI
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 
 // 1. Import Komponen Utama
 import Navbar from './components/Navbar';
@@ -11,13 +13,13 @@ import Alur from './pages/Alur';
 import Register from './pages/Register';
 import Login from './pages/Login';
 
-// 3. Import Halaman Portal Siswa (PASTIKAN FILE INI SUDAH ADA)
+// 3. Import Halaman Portal Siswa
 import DashboardSiswa from './pages/siswa/DashboardSiswa';
 import SiswaDaftar from './pages/siswa/SiswaDaftar';
 import SiswaPengumuman from './pages/siswa/SiswaPengumuman';
 import HasilSeleksi from './pages/siswa/HasilSeleksi';
 
-// 4. Komponen NotFound (Tetap di sini tidak apa-apa karena tidak ada duplikatnya)
+// 4. Komponen NotFound
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
     <h1 className="text-6xl font-extrabold text-blue-600 mb-4">404</h1>
@@ -29,38 +31,54 @@ const NotFound = () => (
 );
 
 export default function App() {
+  // Ambil data lokasi URL aktif saat ini untuk mendeteksi pergantian halaman oleh Framer Motion
+  const location = useLocation();
+
+  // ==========================================================
+  // 🚀 KUNCI RAHASIA: AUTO SCROLL TO TOP SAAT PINDAH HALAMAN
+  // ==========================================================
+  useEffect(() => {
+    // Memaksa browser scroll ke X: 0, Y: 0 setiap kali rute berubah
+    window.scrollTo(0, 0);
+  }, [location.pathname]); 
+  // ==========================================================
+
   return (
     <div className="font-sans text-slate-800 selection:bg-blue-200 flex flex-col min-h-screen">
       {/* Navbar akan selalu tampil di atas */}
       <Navbar />
       
       {/* Area Konten Utama yang berubah-ubah sesuai URL */}
-      <main className="flex-grow pt-20"> {/* Tambah padding top agar konten tidak tertutup Navbar fixed */}
-        <Routes>
-          {/* AREA PUBLIK */}
-          <Route path="/" element={<Home />} />
-          <Route path="/jurusan" element={<Jurusan />} />
-          <Route path="/alur" element={<Alur />} />
-          
-          {/* AREA OTENTIKASI */}
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-
-          {/* AREA PORTAL SISWA */}
-          <Route path="/siswa">
-            {/* Redirect /siswa langsung ke /siswa/dashboard */}
-            <Route index element={<Navigate to="/siswa/dashboard" replace />} />
+      <main className="flex-grow pt-20"> 
+        {/* AnimatePresence dengan mode="wait" memastikan halaman lama 
+          menyelesaikan animasi hilangnya (exit) terlebih dahulu sebelum halaman baru masuk (initial)
+        */}
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            {/* AREA PUBLIK */}
+            <Route path="/" element={<Home />} />
+            <Route path="/jurusan" element={<Jurusan />} />
+            <Route path="/alur" element={<Alur />} />
             
-            <Route path="dashboard" element={<DashboardSiswa />} />
-            <Route path="daftar" element={<SiswaDaftar />} />
-            <Route path="pengumuman" element={<SiswaPengumuman />} />
-          </Route>
+            {/* AREA OTENTIKASI */}
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/siswa/hasil-seleksi" element={<HasilSeleksi />} />
+            {/* AREA PORTAL SISWA */}
+            <Route path="/siswa">
+              {/* Redirect /siswa langsung ke /siswa/dashboard */}
+              <Route index element={<Navigate to="/siswa/dashboard" replace />} />
+              
+              <Route path="dashboard" element={<DashboardSiswa />} />
+              <Route path="daftar" element={<SiswaDaftar />} />
+              <Route path="pengumuman" element={<SiswaPengumuman />} />
+              <Route path="hasil-seleksi" element={<HasilSeleksi />} />
+            </Route>
 
-          {/* HALAMAN ERROR 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* HALAMAN ERROR 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AnimatePresence>
       </main>
 
       {/* Footer akan selalu tampil di bawah */}

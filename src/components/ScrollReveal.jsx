@@ -23,7 +23,7 @@ export default function ScrollReveal({ children, delay = 0, direction = 'up' }) 
         x: 0 
       }}
       // Pengaturan viewport: once: true (animasi hanya 1x), amount: 0.2 (kelihatan 20% langsung animasi)
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: false, amount: 0.2 }}
       // Pengaturan gaya animasi menggunakan fisika "spring" (ada efek memantul halus)
       transition={{
         duration: 0.8,

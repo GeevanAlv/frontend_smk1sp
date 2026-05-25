@@ -7,6 +7,7 @@ import { FaLeaf, FaCarSide, FaNetworkWired, FaCalculator, FaCheckCircle, FaUserT
 // Import Hooks Canggih dari Framer Motion
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
 import ScrollReveal from '../components/ScrollReveal';
+import PageTransition from '../components/PageTransition'; // <-- IMPORT TRANSISI DI SINI
 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
@@ -85,165 +86,168 @@ export default function Home() {
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen relative">
-      
-      {/* EFEK 1: SCROLL PROGRESS BAR (Menempel di atas layar) */}
-      <motion.div 
-        className="fixed top-0 left-0 right-0 h-1.5 bg-blue-600 origin-left z-50"
-        style={{ scaleX }}
-      />
-
-      {/* HERO SECTION */}
-      <ScrollReveal direction="up" delay={0}>
-        <section className="relative h-[85vh]">
-          <Swiper
-            modules={[Autoplay, EffectFade, Pagination]}
-            effect="fade"
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            className="h-full w-full"
-          >
-            {slides.map((slide) => (
-              <SwiperSlide key={slide.id}>
-                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${slide.img})` }}>
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col justify-center px-4 sm:px-6 lg:px-16 max-w-7xl mx-auto">
-                    <motion.span 
-                      initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
-                      className="inline-block py-1 px-3 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-bold tracking-widest uppercase mb-6 w-max backdrop-blur-sm"
-                    >
-                      SPMB Online Terbuka
-                    </motion.span>
-                    <motion.h1 
-                      initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.8 }}
-                      className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 leading-tight max-w-3xl"
-                    >
-                      {slide.title}
-                    </motion.h1>
-                    <motion.p 
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 1 }}
-                      className="text-xl text-slate-300 mb-10 max-w-2xl font-light leading-relaxed"
-                    >
-                      {slide.subtitle}. Wujudkan impianmu menjadi tenaga ahli profesional dan mandiri bersama SMKN 1 Simpang Pematang.
-                    </motion.p>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }} className="flex flex-wrap gap-4">
-                      <Link to="/register" className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-blue-500 transition-colors shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95">
-                        Buat Akun Pendaftaran
-                      </Link>
-                      <Link to="/alur" className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 backdrop-blur-md transition-colors active:scale-95">
-                        Pelajari Alur
-                      </Link>
-                    </motion.div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </section>
-      </ScrollReveal>
-
-      {/* STATISTIK */}
-      <section className="relative -mt-16 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-8 border border-white">
-          {[
-            { angka: "B", label: "Akreditasi Sekolah", icon: <FaCheckCircle className="text-green-500" /> },
-            { angka: "52", label: "Tenaga Pendidik", icon: <FaUserTie className="text-blue-500" /> },
-            { angka: "780", label: "Siswa Aktif", icon: <FaUsers className="text-orange-500" /> },
-            { angka: "21", label: "Ruang Kelas", icon: <FaBuilding className="text-purple-500" /> },
-          ].map((stat, i) => (
-            <ScrollReveal key={i} direction="up" delay={i * 0.15}>
-              <div className="text-center group">
-                <div className="flex justify-center text-3xl mb-3 transform group-hover:-translate-y-2 transition-transform duration-300">{stat.icon}</div>
-                <h4 className="text-4xl font-black text-slate-800 tracking-tight">{stat.angka}</h4>
-                <p className="text-slate-500 text-sm mt-1 font-bold uppercase tracking-wider">{stat.label}</p>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
-
-      {/* SAMBUTAN KEPALA SEKOLAH DENGAN EFEK PARALLAX (VERSI LEBIH RAMPING) */}
-      <section ref={parallaxRef} className="max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-          
-          {/* KOLOM FOTO (Sekarang lebih kecil, mengambil 5/12 porsi layar) */}
-          <div className="w-full lg:w-5/12 relative mx-auto max-w-md lg:max-w-none">
-            <ScrollReveal direction="right" delay={0.2}>
-              <div className="absolute inset-0 bg-blue-600 rounded-2xl transform translate-x-4 translate-y-4 opacity-20"></div>
-              {/* Tinggi diturunkan ke 380px */}
-              <div className="overflow-hidden rounded-2xl shadow-xl relative h-[380px] w-full">
-                <motion.img 
-                  style={{ y: yParallax, scale: 1.15 }} 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=0&w=800" 
-                  alt="Kepala Sekolah" 
-                  className="absolute top-0 left-0 w-full h-[125%] object-cover origin-center" 
-                />
-              </div>
-            </ScrollReveal>
-          </div>
-
-          {/* KOLOM TEKS (Lebih lebar, mengambil 7/12 porsi layar) */}
-          <div className="w-full lg:w-7/12 space-y-6">
-            <ScrollReveal direction="left" delay={0.4}>
-              <div className="inline-flex items-center gap-3 mb-2">
-                <span className="h-px w-6 bg-blue-600"></span>
-                <h4 className="text-blue-600 font-bold tracking-widest uppercase text-xs">Sambutan Kepala Sekolah</h4>
-              </div>
-              
-              {/* Ukuran font diturunkan satu tingkat */}
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tight">
-                Mencetak Lulusan yang Siap <span className="text-blue-600">Bekerja & Berwirausaha</span>
-              </h2>
-              
-              {/* Teks paragraf dibuat ukuran standar base */}
-              <p className="text-slate-600 leading-relaxed text-base text-justify font-medium">
-                "Selamat datang di portal SPMB SMKN 1 Simpang Pematang. Kami berkomitmen memberikan layanan pendidikan vokasi terbaik dengan fasilitas pembelajaran yang memadai. Dengan rasio ideal siswa dan guru, kami memastikan setiap peserta didik siap menghadapi tantangan dunia industri."
-              </p>
-              
-              {/* Info nama dan jabatan lebih rapi */}
-              <div className="pt-6 border-t border-slate-200 mt-6 flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">S</div>
-                <div>
-                  <h5 className="font-black text-slate-900 text-lg tracking-tight">Suryadi, S.Pd., M.M.</h5>
-                  <p className="text-blue-600 font-bold text-xs tracking-wide">Kepala SMKN 1 Simpang Pematang</p>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-
-        </div>
-      </section>
-
-      {/* EFEK 3: PROGRAM KEAHLIAN DENGAN SPOTLIGHT GLOW MOUSE */}
-      <section className="bg-slate-950 py-32 relative overflow-hidden">
-        {/* Dekorasi Background Ambient */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+    // BUNGKUS SELURUH HALAMAN DENGAN PAGETRANSITION
+    <PageTransition>
+      <div className="bg-slate-50 min-h-screen relative">
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <ScrollReveal direction="up" delay={0.1}>
-            <div className="text-center mb-20">
-              <h4 className="text-blue-500 font-black tracking-[0.2em] uppercase text-xs mb-3">Pilihan Jurusan</h4>
-              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">Program Keahlian Unggulan</h2>
-            </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {jurusan.map((j, i) => (
-              <ScrollReveal key={i} direction="up" delay={i * 0.15}>
-                {/* INI DIA KOMPONEN SPOTLIGHT CANGGIHNYA */}
-                <SpotlightCard className="h-full">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-8 ${j.warna} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
-                    {j.icon}
+        {/* EFEK 1: SCROLL PROGRESS BAR (Menempel di atas layar) */}
+        <motion.div 
+          className="fixed top-0 left-0 right-0 h-1.5 bg-blue-600 origin-left z-50"
+          style={{ scaleX }}
+        />
+
+        {/* HERO SECTION */}
+        <ScrollReveal direction="up" delay={0}>
+          <section className="relative h-[85vh]">
+            <Swiper
+              modules={[Autoplay, EffectFade, Pagination]}
+              effect="fade"
+              pagination={{ clickable: true }}
+              autoplay={{ delay: 5000, disableOnInteraction: false }}
+              className="h-full w-full"
+            >
+              {slides.map((slide) => (
+                <SwiperSlide key={slide.id}>
+                  <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${slide.img})` }}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
+                    <div className="absolute inset-0 flex flex-col justify-center px-4 sm:px-6 lg:px-16 max-w-7xl mx-auto">
+                      <motion.span 
+                        initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
+                        className="inline-block py-1 px-3 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-bold tracking-widest uppercase mb-6 w-max backdrop-blur-sm"
+                      >
+                        SPMB Online Terbuka
+                      </motion.span>
+                      <motion.h1 
+                        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.8 }}
+                        className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 leading-tight max-w-3xl"
+                      >
+                        {slide.title}
+                      </motion.h1>
+                      <motion.p 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 1 }}
+                        className="text-xl text-slate-300 mb-10 max-w-2xl font-light leading-relaxed"
+                      >
+                        {slide.subtitle}. Wujudkan impianmu menjadi tenaga ahli profesional dan mandiri bersama SMKN 1 Simpang Pematang.
+                      </motion.p>
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }} className="flex flex-wrap gap-4">
+                        <Link to="/register" className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-blue-500 transition-colors shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95">
+                          Buat Akun Pendaftaran
+                        </Link>
+                        <Link to="/alur" className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 backdrop-blur-md transition-colors active:scale-95">
+                          Pelajari Alur
+                        </Link>
+                      </motion.div>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-4 leading-snug">{j.nama}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed font-medium">{j.desc}</p>
-                </SpotlightCard>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </section>
+        </ScrollReveal>
+
+        {/* STATISTIK */}
+        <section className="relative -mt-16 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-8 border border-white">
+            {[
+              { angka: "B", label: "Akreditasi Sekolah", icon: <FaCheckCircle className="text-green-500" /> },
+              { angka: "52", label: "Tenaga Pendidik", icon: <FaUserTie className="text-blue-500" /> },
+              { angka: "780", label: "Siswa Aktif", icon: <FaUsers className="text-orange-500" /> },
+              { angka: "21", label: "Ruang Kelas", icon: <FaBuilding className="text-purple-500" /> },
+            ].map((stat, i) => (
+              <ScrollReveal key={i} direction="up" delay={i * 0.15}>
+                <div className="text-center group">
+                  <div className="flex justify-center text-3xl mb-3 transform group-hover:-translate-y-2 transition-transform duration-300">{stat.icon}</div>
+                  <h4 className="text-4xl font-black text-slate-800 tracking-tight">{stat.angka}</h4>
+                  <p className="text-slate-500 text-sm mt-1 font-bold uppercase tracking-wider">{stat.label}</p>
+                </div>
               </ScrollReveal>
             ))}
           </div>
-        </div>
-      </section>
-      
-    </div>
+        </section>
+
+        {/* SAMBUTAN KEPALA SEKOLAH DENGAN EFEK PARALLAX (VERSI LEBIH RAMPING) */}
+        <section ref={parallaxRef} className="max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8 overflow-hidden">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            
+            {/* KOLOM FOTO (Sekarang lebih kecil, mengambil 5/12 porsi layar) */}
+            <div className="w-full lg:w-5/12 relative mx-auto max-w-md lg:max-w-none">
+              <ScrollReveal direction="right" delay={0.2}>
+                <div className="absolute inset-0 bg-blue-600 rounded-2xl transform translate-x-4 translate-y-4 opacity-20"></div>
+                {/* Tinggi diturunkan ke 380px */}
+                <div className="overflow-hidden rounded-2xl shadow-xl relative h-[380px] w-full">
+                  <motion.img 
+                    style={{ y: yParallax, scale: 1.15 }} 
+                    src="/jito.jpeg" 
+                    alt="Kepala Sekolah" 
+                    className="absolute top-0 left-0 w-full h-[125%] object-cover origin-center" 
+                  />
+                </div>
+              </ScrollReveal>
+            </div>
+
+            {/* KOLOM TEKS (Lebih lebar, mengambil 7/12 porsi layar) */}
+            <div className="w-full lg:w-7/12 space-y-6">
+              <ScrollReveal direction="left" delay={0.4}>
+                <div className="inline-flex items-center gap-3 mb-2">
+                  <span className="h-px w-6 bg-blue-600"></span>
+                  <h4 className="text-blue-600 font-bold tracking-widest uppercase text-xs">Sambutan Kepala Sekolah</h4>
+                </div>
+                
+                {/* Ukuran font diturunkan satu tingkat */}
+                <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tight">
+                  Mencetak Lulusan yang Siap <span className="text-blue-600">Bekerja & Berwirausaha</span>
+                </h2>
+                
+                {/* Teks paragraf dibuat ukuran standar base */}
+                <p className="text-slate-600 leading-relaxed text-base text-justify font-medium">
+                  "Selamat datang di portal SPMB SMKN 1 Simpang Pematang. Kami berkomitmen memberikan layanan pendidikan vokasi terbaik dengan fasilitas pembelajaran yang memadai. Dengan rasio ideal siswa dan guru, kami memastikan setiap peserta didik siap menghadapi tantangan dunia industri."
+                </p>
+                
+                {/* Info nama dan jabatan lebih rapi */}
+                <div className="pt-6 border-t border-slate-200 mt-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">S</div>
+                  <div>
+                    <h5 className="font-black text-slate-900 text-lg tracking-tight">Suryadi, S.Pd., M.M.</h5>
+                    <p className="text-blue-600 font-bold text-xs tracking-wide">Kepala SMKN 1 Simpang Pematang</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            </div>
+
+          </div>
+        </section>
+
+        {/* EFEK 3: PROGRAM KEAHLIAN DENGAN SPOTLIGHT GLOW MOUSE */}
+        <section className="bg-slate-950 py-32 relative overflow-hidden">
+          {/* Dekorasi Background Ambient */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <ScrollReveal direction="up" delay={0.1}>
+              <div className="text-center mb-20">
+                <h4 className="text-blue-500 font-black tracking-[0.2em] uppercase text-xs mb-3">Pilihan Jurusan</h4>
+                <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">Program Keahlian Unggulan</h2>
+              </div>
+            </ScrollReveal>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {jurusan.map((j, i) => (
+                <ScrollReveal key={i} direction="up" delay={i * 0.15}>
+                  {/* INI DIA KOMPONEN SPOTLIGHT CANGGIHNYA */}
+                  <SpotlightCard className="h-full">
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-8 ${j.warna} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
+                      {j.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-4 leading-snug">{j.nama}</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed font-medium">{j.desc}</p>
+                  </SpotlightCard>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+        
+      </div>
+    </PageTransition>
   );
 }
