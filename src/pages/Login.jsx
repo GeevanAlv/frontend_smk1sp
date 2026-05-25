@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaSignInAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import api from '../services/api'; // 1. Tambahkan import API
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,10 +12,10 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // 2. Ubah fungsi menjadi async
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Loading State dengan SweetAlert2
     Swal.fire({
       title: 'Menghubungkan...',
       text: 'Mohon tunggu sebentar',
@@ -24,30 +25,53 @@ export default function Login() {
       }
     });
 
-    // 2. Simulasi Logika Login (Nanti diganti Axios)
-    setTimeout(() => {
-      // Kita anggap login sukses jika password diisi minimal 6 karakter
-      if (formData.password.length >= 6) {
+    try {
+      // 1. Tembak API Login
+      const response = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      // 2. Gunakan tanda tanya (?.) agar aman dan tidak bikin web crash jika data belum dikirim server
+      const token = response?.data?.data?.token;
+      
+      if (token) {
+        localStorage.setItem('token', token);
+        
+        const userData = {
+          id: response?.data?.data?.id,
+          name: response?.data?.data?.name,
+          email: response?.data?.data?.email
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+
         Swal.fire({
           icon: 'success',
           title: 'Login Berhasil',
-          text: 'Selamat datang kembali di Portal SPMB!',
+          text: response?.data?.message || 'Selamat datang kembali di Portal SPMB!',
           confirmButtonColor: '#2563eb',
           timer: 1500,
           showConfirmButton: false
         }).then(() => {
-          // PINDAH KE DASHBOARD SISWA
           navigate('/siswa/dashboard');
         });
+        
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Login Gagal',
-          text: 'Email atau password salah. Silakan coba lagi.',
-          confirmButtonColor: '#ef4444'
-        });
+        // Jika login berhasil di sistem tapi token tidak mendarat dengan benar
+        throw new Error("Token tidak ditemukan dalam respon server.");
       }
-    }, 1500);
+
+    } catch (error) {
+      // 3. Menangkap pesan error dari NestJS dengan aman
+      const pesanError = error.response?.data?.message || error.message || 'Email atau password salah. Silakan coba lagi.';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Gagal',
+        text: typeof pesanError === 'object' ? pesanError[0] : pesanError,
+        confirmButtonColor: '#ef4444'
+      });
+    }
   };
 
   return (

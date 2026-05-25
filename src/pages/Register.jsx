@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaIdCard } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import api from '../services/api';
 
 export default function Register() {
   const navigate = useNavigate();
+  
+  // 1. Disesuaikan dengan Payload JSON dari Arif (name, email, password)
   const [formData, setFormData] = useState({ 
-    nama: '', 
+    name: '', 
     email: '', 
-    nisn: '', // Tambahan NISN
     password: '' 
   });
 
@@ -16,22 +18,10 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // --- VALIDASI CLIENT-SIDE ---
-    
-    // 1. Validasi NISN (Harus angka dan 10 digit)
-    if (formData.nisn.length !== 10) {
-      return Swal.fire({
-        icon: 'error',
-        title: 'NISN Tidak Valid',
-        text: 'NISN harus berjumlah tepat 10 digit angka.',
-        confirmButtonColor: '#ef4444'
-      });
-    }
-
-    // 2. Validasi Password
+    // 2. Validasi Password Client-Side
     if (formData.password.length < 6) {
       return Swal.fire({
         icon: 'warning',
@@ -41,31 +31,42 @@ export default function Register() {
       });
     }
 
-    // --- PROSES SIMULASI API ---
-    
     Swal.fire({
-      title: 'Memproses Pendaftaran...',
+      title: 'Menyimpan Data...',
       text: 'Mohon tunggu sebentar',
       allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
+      didOpen: () => { Swal.showLoading(); }
     });
 
-    // Simulasi delay pengiriman data ke Backend (Axios nanti di sini)
-    setTimeout(() => {
+    try {
+      // 3. Menembak API Backend Arif
+      await api.post('/auth/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
+
+      // 4. Jika berhasil masuk ke MySQL
       Swal.fire({
         icon: 'success',
         title: 'Akun SPMB Berhasil Dibuat!',
         text: 'Silakan masuk menggunakan Email dan Password Anda.',
         confirmButtonColor: '#2563eb',
-        timer: 3000,
-        timerProgressBar: true
       }).then(() => {
-        // Redirect ke halaman login setelah sukses
-        navigate('/login');
+        navigate('/login'); // Pindah ke halaman login
       });
-    }, 2000);
+
+    } catch (error) {
+      // 5. Menangkap pesan error dari NestJS (misal: Email sudah digunakan)
+      const pesanError = error.response?.data?.message || 'Terjadi kesalahan pada server. Coba lagi nanti.';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Pendaftaran Gagal',
+        text: typeof pesanError === 'object' ? pesanError[0] : pesanError,
+        confirmButtonColor: '#ef4444'
+      });
+    }
   };
 
   return (
@@ -86,7 +87,7 @@ export default function Register() {
         <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-100">
           <form className="space-y-5" onSubmit={handleSubmit}>
             
-            {/* INPUT NAMA */}
+            {/* INPUT NAMA (Perhatikan name="name" sesuai permintaan backend) */}
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1">Nama Lengkap</label>
               <div className="relative rounded-md shadow-sm">
@@ -94,26 +95,10 @@ export default function Register() {
                   <FaUser />
                 </div>
                 <input
-                  type="text" name="nama" required
+                  type="text" name="name" required
                   className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-slate-200 rounded-xl py-3 border transition-all"
                   placeholder="Sesuai Ijazah / KK"
-                  value={formData.nama} onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* INPUT NISN */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">NISN</label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <FaIdCard />
-                </div>
-                <input
-                  type="number" name="nisn" required
-                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-slate-200 rounded-xl py-3 border transition-all"
-                  placeholder="10 Digit Nomor Induk Siswa Nasional"
-                  value={formData.nisn} onChange={handleChange}
+                  value={formData.name} onChange={handleChange}
                 />
               </div>
             </div>

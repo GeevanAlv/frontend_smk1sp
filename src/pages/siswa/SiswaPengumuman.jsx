@@ -1,91 +1,149 @@
 import { useState, useEffect } from 'react';
-import { FaPrint, FaTrophy, FaHourglassHalf } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft, FaIdBadge, FaCalendarAlt, FaMapMarkerAlt, FaDownload, FaLock } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import api from '../../services/api';
 
 export default function SiswaPengumuman() {
-  // SETTING WAKTU PENGUMUMAN (Tahun, Bulan-1, Tanggal, Jam, Menit, Detik)
-  // Contoh: 1 Juli 2026 jam 08:00 pagi
-  const countdownDate = new Date(2026, 6, 1, 8, 0, 0).getTime();
-
-  const [timeLeft, setTimeLeft] = useState({ hari: 0, jam: 0, menit: 0, detik: 0 });
-  const [isTimeUp, setIsTimeUp] = useState(false);
-
-  // DUMMY DATA API
-  const statusKelulusan = {
-    diterima: true,
-    jurusanDiterima: "Teknik Komputer & Jaringan (TKJ)"
-  };
+  const navigate = useNavigate();
+  const [cardData, setCardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = countdownDate - now;
-
-      if (distance < 0) {
-        clearInterval(timer);
-        setIsTimeUp(true);
-      } else {
-        setTimeLeft({
-          hari: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          jam: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          menit: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          detik: Math.floor((distance % (1000 * 60)) / 1000),
-        });
+    const fetchCard = async () => {
+      try {
+        const response = await api.get('/cards/me');
+        
+        // =========================================================================
+        // 🕵️‍♂️ PERBAIKAN DI SINI: Mengambil response.data.data karena dibungkus Arief
+        // =========================================================================
+        if (response.data?.data) {
+          setCardData(response.data.data);
+        } else {
+          setCardData(response.data); // Jaga-jaga kalau Arief tidak membungkusnya
+        }
+        
+      } catch (error) {
+        console.log("Kartu belum siap atau berkas belum diverifikasi.");
+        setCardData(null);
+      } finally {
+        setIsLoading(false);
       }
-    }, 1000);
-
-    return () => clearInterval(timer);
+    };
+    fetchCard();
   }, []);
 
+  const handleDownloadPDF = async () => {
+    Swal.fire({
+      title: 'Mengunduh Dokumen...',
+      text: 'Harap tunggu, sedang mengunduh file PDF Kartu Ujian.',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const response = await api.get('/cards/me/download', {
+        responseType: 'blob', // Wajib blob untuk file PDF
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Kartu_Ujian_SPMB.pdf');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      Swal.close();
+    } catch (error) {
+      Swal.fire('Gagal', 'Tidak dapat mengunduh kartu saat ini. Coba lagi nanti.', 'error');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 font-sans">
+        <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+        <p className="text-slate-500 font-bold">Memuat data kartu ujian...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-slate-50 min-h-screen py-16 font-sans flex flex-col items-center justify-center">
-      <div className="max-w-3xl w-full mx-auto px-4">
+    <div className="bg-slate-50 min-h-screen py-10 font-sans">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {!isTimeUp ? (
-          /* TAMPILAN COUNTDOWN */
-          <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center shadow-xl shadow-blue-900/5">
-            <FaHourglassHalf className="text-6xl text-blue-500 mx-auto mb-6 animate-pulse" />
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Pengumuman Belum Dibuka</h1>
-            <p className="text-slate-600 mb-10">Hasil seleksi PPDB SMKN 1 Simpang Pematang akan diumumkan dalam waktu:</p>
-            
-            <div className="flex justify-center gap-4 sm:gap-6">
-              {Object.entries(timeLeft).map(([satuan, nilai]) => (
-                <div key={satuan} className="flex flex-col items-center">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl sm:text-4xl font-extrabold text-blue-600 border border-slate-200 shadow-inner">
-                    {nilai < 10 ? `0${nilai}` : nilai}
+        <button onClick={() => navigate('/siswa/dashboard')} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-6 font-semibold transition-colors">
+          <FaArrowLeft /> Kembali ke Dashboard
+        </button>
+
+        <div className="mb-8 border-b border-slate-200 pb-6">
+          <h2 className="text-sm font-bold tracking-widest text-blue-600 uppercase mb-1">Tahap Seleksi</h2>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Informasi Tes & Kartu Ujian</h1>
+        </div>
+
+        {cardData ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+            {/* Dekorasi Latar */}
+
+            <div className="relative z-10">
+              <div className="inline-block bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                Berkas Diverifikasi
+              </div>
+              
+              <h3 className="text-2xl font-black text-slate-900 mb-8">Detail Jadwal Ujian Anda</h3>
+              
+              <div className="space-y-6 mb-10">
+                {/* NOMOR PENDAFTARAN */}
+                <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shrink-0"><FaIdBadge /></div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Nomor Pendaftaran</p>
+                    <p className="text-lg font-black text-slate-900">{cardData.no_daftar || '-'}</p>
                   </div>
-                  <span className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest mt-3">{satuan}</span>
                 </div>
-              ))}
+
+                {/* TANGGAL UJIAN */}
+                <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shrink-0"><FaCalendarAlt /></div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal & Waktu Ujian</p>
+                    <p className="text-lg font-black text-slate-900">
+                      {cardData.tanggal_test || '-'} | {cardData.jam_test || '-'} WIB
+                    </p>
+                  </div>
+                </div>
+
+                {/* LOKASI UJIAN */}
+                <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shrink-0"><FaMapMarkerAlt /></div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Lokasi Ujian (Offline)</p>
+                    <p className="text-lg font-black text-slate-900">{cardData.lokasi_test || '-'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleDownloadPDF}
+                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
+              >
+                <FaDownload /> Unduh PDF Kartu Ujian
+              </button>
+              <p className="text-xs text-slate-400 mt-4 font-medium italic">
+                *Cetak kartu ini di kertas A4 dan bawa saat pelaksanaan tes beserta alat tulis.
+              </p>
             </div>
           </div>
         ) : (
-          /* TAMPILAN HASIL PENGUMUMAN */
-          <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center shadow-xl">
-            {statusKelulusan.diterima ? (
-              <div>
-                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-5xl text-green-600 mx-auto mb-6 shadow-inner">
-                  <FaTrophy />
-                </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Selamat, Anda Diterima!</h1>
-                <p className="text-slate-600 mb-8 text-lg">
-                  Anda dinyatakan lulus seleksi PPDB SMKN 1 Simpang Pematang pada kompetensi keahlian:<br/>
-                  <span className="font-bold text-blue-600 mt-2 block">{statusKelulusan.jurusanDiterima}</span>
-                </p>
-                <button onClick={() => window.print()} className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">
-                  <FaPrint /> Cetak Bukti Kelulusan
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-5xl text-red-600 mx-auto mb-6 shadow-inner">
-                  &times;
-                </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Mohon Maaf</h1>
-                <p className="text-slate-600 mb-8 text-lg">
-                  Berdasarkan hasil seleksi, Anda dinyatakan <strong>TIDAK LULUS</strong> pada PPDB SMKN 1 Simpang Pematang tahun ini. Tetap semangat dan pantang menyerah!
-                </p>
-              </div>
-            )}
+          <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-sm">
+            <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">
+              <FaLock />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 mb-2">Kartu Ujian Belum Tersedia</h3>
+            <p className="text-slate-500 font-medium max-w-md mx-auto">
+              Kartu ujian hanya dapat dicetak setelah berkas pendaftaran Anda diverifikasi dan disetujui oleh Panitia. Silakan pantau status di Dashboard Anda.
+            </p>
           </div>
         )}
 

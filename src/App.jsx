@@ -15,6 +15,7 @@ import Login from './pages/Login';
 import DashboardSiswa from './pages/siswa/DashboardSiswa';
 import SiswaDaftar from './pages/siswa/SiswaDaftar';
 import SiswaPengumuman from './pages/siswa/SiswaPengumuman';
+import HasilSeleksi from './pages/siswa/HasilSeleksi';
 
 // 4. Komponen NotFound (Tetap di sini tidak apa-apa karena tidak ada duplikatnya)
 const NotFound = () => (
@@ -54,6 +55,8 @@ export default function App() {
             <Route path="daftar" element={<SiswaDaftar />} />
             <Route path="pengumuman" element={<SiswaPengumuman />} />
           </Route>
+
+          <Route path="/siswa/hasil-seleksi" element={<HasilSeleksi />} />
 
           {/* HALAMAN ERROR 404 */}
           <Route path="*" element={<NotFound />} />
